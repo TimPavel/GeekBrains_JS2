@@ -1,2 +1,2 @@
-# GeekBrains_JS2_Homework2
+# GeekBrains_JS2
 ДЗ ко второму уроку
