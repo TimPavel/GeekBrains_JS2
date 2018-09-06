@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+				content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>HomeWork_3-3</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+	<style>
+		.form-wrap {
+			margin: auto;
+			padding: 20px;
+			max-width: 850px
+		}
+		.messageForError {
+			visibility: visible;
+			color: red;
+			font-size: 0.8rem;
+			padding-left: 10px;
+		}
+		.correctValue {
+			visibility: hidden;
+		}
+		
+		.userStyleInput {
+			border: solid red 2px;
+		}
+		
+	</style>
+</head>
+<body>
+	<div class="form-wrap">
+		<form class="my-form" action="">
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<input id="nameField" type="text" name="name" class="form-control" placeholder="Имя">
+				</div>
+				<div class="form-group col-md-6">
+					<input id="phoneField" type="text" name="phone" class="form-control" placeholder="Телефон">
+				</div>
+			</div>
+			
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<input id="emailField" type="text" name="email" class="form-control" placeholder="Email">
+				</div>
+				<div class="form-group col-md-6">
+					<input id="textField" type="text" name="text" class="form-control" placeholder="Text">
+				</div>
+			</div>
+			<button id="buttonSend" type="submit" class="btn btn-primary">Отправить</button>
+		</form>
+	</div>
+	<script>
+		
+		//находим все инпуты и кладем их в инпутс
+		var inputs = document.querySelectorAll('input');
+		//находим инпут для имени
+		var nameField = document.getElementById('nameField');
+		//устанавливаем регулярное выражение для имени и для поля с текстом
+		var nameFieldRegExp = /^[A-Za-zЁёА-Яа-я]+$/;
+		//создаем блок для сообщения об ошибке при вводе имени
+		var errorMessageName = document.createElement('div');
+		//устанавливаем сам текст для сообщения при введенного несоответствии значения и установленного регулярного выражения для имени
+		var textErrorForName = 'Not correct name, fill the field above by only characters.';
+
+		//находим инпут для телефонного номера
+		var phoneField = document.getElementById('phoneField');
+		//устанавливаем регулярное выражение для телефонного номера
+		var phoneRegExp = /\+7\(\d{3}\)\d{3}-\d{4}/;
+		//создаем блок для сообщения об ошибке при вводе телефонного номера
+		var errorMessagePhone = document.createElement('div');
+		//устанавливаем сам текст для сообщения при несоответствии значения и установленного регулярного выражения для номера
+		var textErrorForPhone = 'Not correct phone number, please use this format +7(000)000-0000';
+
+		//находим инпут для емейла
+		var emailField = document.getElementById('emailField');
+		//устанавливаем регулярное выражение ля емейла
+		var emailRegExp = /((\w+|\w+\.\w+|\w+-\w+)@[a-zA-Z_]+?\.[a-zA-Z]{2,3})$/;
+		//создаем блок для сообщения об ошибке при вводе емейла
+		var errorMessageEmail = document.createElement('div');
+		//устанавливаем сам текст для сообщения при несоответствии значения и установленного регулярного выражения для емейла
+		var textErrorForEmail = 'Not correct email, please use this formats\nmymail@mail.ru,or my.mail@mail.ru, or my-mail@mail.ru';
+
+		//находим инпут для текста
+		var textField = document.getElementById('textField');
+		//создаем блок для сообщения об ошибке при вводе текста
+		var errorMessageText = document.createElement('div');
+		//устанавливаем сам текст сообщения при несоответствии введенного значения и установленного регулярного выражения для текста
+		var textErrorForTextField  = 'Please fill the field above.';
+		
+		////находим кнопку отправить
+		var buttonSend = document.getElementById('buttonSend');
+		
+		
+		//навешиваем обработчик на кнопку
+		buttonSend.addEventListener('click', function(event){
+			//цикл для проверки значений хоть в каком нибуде инпуте при нажатии кнопки отправить
+			for (var i = 0; i < inputs.length; i++) {
+				// проверяем инпуты на наличие в них значений
+				if(inputs[i].value === "") {
+					// если инпут пустой, обрамляем его в рамку
+					inputs[i].classList.add('userStyleInput');
+					//отменяем действие кнопки по умолчанию
+					event.preventDefault();
+				} else { //иначе, снимаем обрамление
+					inputs[i].classList.remove('userStyleInput');
+				}
+			}
+		});
+		
+		//навешиваем обработчик blur на инпут для текста
+		textField.addEventListener('blur', function(){
+			if(!nameFieldRegExp.test(textField.value)) {// если есть несоответствие значения и рег.выраж
+				//добавляем класс для сообщения об ошибке
+				errorMessageText.classList.add('messageForError');
+				// инпут обрамляем
+				textField.classList.add('userStyleInput');
+				// устанавливаем заготовленный текст для данного случая
+				errorMessageText.textContent = textErrorForTextField;
+				// аппендим сообщение об ошибке при вводе текста
+				textField.parentElement.appendChild(errorMessageText);
+			} else { //иначе,
+				if (document.body.contains(errorMessageText)) { //если есть сообщени об ошибке для данного инпута
+					//удаляем данное сообщение
+					textField.parentElement.removeChild(errorMessageText);
+				}
+				// также удаляем обрамление
+				textField.classList.remove('userStyleInput');
+			}
+		});
+
+		//навешиваем обработчик blur на инпут для email а
+		emailField.addEventListener('blur', function(){
+			if(!emailRegExp.test(emailField.value)) {// если есть несоответствие значения и рег.выраж
+				//добавляем класс для сообщения об ошибке
+				errorMessageEmail.classList.add('messageForError');
+				// инпут обрамляем
+				emailField.classList.add('userStyleInput');
+				// устанавливаем заготовленный текст для данного случая
+				errorMessageEmail.textContent = textErrorForEmail;
+				// аппендим сообщение об ошибке при вводе email а
+				emailField.parentElement.appendChild(errorMessageEmail);
+			} else {  //иначе,
+				if (document.body.contains(errorMessageEmail)) { //если есть сообщени об ошибке для данного инпута
+					//удаляем данное сообщение
+					emailField.parentElement.removeChild(errorMessageEmail);
+				}
+				// также удаляем обрамление
+				emailField.classList.remove('userStyleInput');
+			}
+		});
+
+		//навешиваем обработчик blur на инпут для телефонного номера
+		phoneField.addEventListener('blur', function(){
+			if(!phoneRegExp.test(phoneField.value)) {  // если есть несоответствие значения и рег.выраж
+				//добавляем класс для сообщения об ошибке
+				errorMessagePhone.classList.add('messageForError');
+				// инпут обрамляем
+				phoneField.classList.add('userStyleInput');
+				// устанавливаем заготовленный текст для данного случая
+				errorMessagePhone.textContent = textErrorForPhone;
+				// аппендим сообщение об ошибке при вводе телефонного номера
+				phoneField.parentElement.appendChild(errorMessagePhone);
+			} else { //иначе,
+				if (document.body.contains(errorMessagePhone)) { //если есть сообщени об ошибке для данного инпута
+					//удаляем данное сообщение
+					phoneField.parentElement.removeChild(errorMessagePhone);
+				}
+				// также удаляем обрамление
+				phoneField.classList.remove('userStyleInput');
+			}
+		});
+
+		//навешиваем обработчик blur на инпут для имени
+		nameField.addEventListener('blur', function(){
+			if(!nameFieldRegExp.test(nameField.value)) {  // если есть несоответствие значения и рег.выраж
+				//добавляем класс для сообщения об ошибке
+				errorMessageName.classList.add('messageForError');
+				// инпут обрамляем
+				nameField.classList.add('userStyleInput');
+				// устанавливаем заготовленный текст для данного случая
+				errorMessageName.textContent = textErrorForName;
+				// аппендим сообщение об ошибке при вводе имени
+				nameField.parentElement.appendChild(errorMessageName);
+			} else { //иначе,
+				if (document.body.contains(errorMessageName)) { //если есть сообщени об ошибке для данного инпута
+					//удаляем данное сообщение
+					nameField.parentElement.removeChild(errorMessageName);
+				}
+				// также удаляем обрамление
+				nameField.classList.remove('userStyleInput');
+			}
+		});
+		
+		
+	</script>
+</body>
+</html>
