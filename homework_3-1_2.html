@@ -9,7 +9,7 @@
 	<script>
 		var regexp = /'/g;
 		var text = "I am 'your' friend, aren\'t I? Yes, 'you' are."
-		
+		console.log(text);
 		text = text.replace(regexp, function (str, offset) {
 			if(text[offset - 1] === " " || text[offset + 1] === " " ) {
 				return '"';
