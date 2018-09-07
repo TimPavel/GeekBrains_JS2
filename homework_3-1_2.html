@@ -7,8 +7,23 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>HomeWork_3-1_2</title>
 	<script>
+		// 1. Дан большой текст, в котором для обозначения диалогов используются одинарные кавычки.
+		// 	Придумать шаблон, который меняет одинарные кавычки на двойные.
+		
+		var regexp1 = /'\s/g;
+		var regexp2 = /\s'/g;
+		var text = "I am 'your' friend, aren\'t I? Yes, 'you' are.";
+		//вывод в консоль оргигинального текста
+		console.log(text);
+		text = text.replace(regexp1, "\" ");
+		text = text.replace(regexp2, ' "');
+		//вывод в консоль текста с двойными кавычками
+		console.log(text);
+		
+		
+		/* old solution
 		var regexp = /'/g;
-		var text = "I am 'your' friend, aren\'t I? Yes, 'you' are."
+		var text = "I am 'your' friend, aren\'t I? Yes, 'you' are.";
 		console.log(text);
 		text = text.replace(regexp, function (str, offset) {
 			if(text[offset - 1] === " " || text[offset + 1] === " " ) {
@@ -18,6 +33,7 @@
 			}
 		});
 		console.log(text);
+		*/
 	</script>
 </head>
 <body>
