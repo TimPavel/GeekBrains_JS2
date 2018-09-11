@@ -130,17 +130,16 @@
 						$('<div>').text('Содержимое для вкладки № ' + i).attr('class','tab-cont').appendTo('.content');
 					}
 				}
-
-				console.log($(".tab-cont")[0]);
+				
 				$("li").on("click", function () {
 					
 					var text = $(".tab-cont");
 					
 					
 					$("li").removeClass("current");
-					text.removeClass("currentForText");
+					text.hide();
 					$(this).addClass("current");
-					text.eq($(this).index()).addClass("currentForText");
+					text.eq($(this).index()).addClass("currentForText").show();
 					console.log(text.eq($(this).index()).text());
 
 				});
