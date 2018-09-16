@@ -86,6 +86,7 @@
             // парсим ответ в объект и сохраняем его в response.
 						var  response = JSON.parse(xhr.responseText);
 						// получаем id ответа.
+      
 						var lastid = response.id;
 						
             //функция добавляет в DOM комментарий, в параметре  text введенный пользователем текст.
@@ -113,11 +114,10 @@
 						// после того, как обработка запроса закончена и ответ готов.
 						// парсим ответ в объект и сохраняем его в response.
 						var response = JSON.parse(xhr.responseText);
-						// сохраняем в id - id  последеней записи на сервере.
-						var id = response.length;
 						
-						if (id > 0) {
-							// если id больше нуля создаем новый запрос на сервер
+						if (response.length) { // если есть записи на сервере, заходим внутрь 
+							// получаем id из последнего объекта в массиве.
+							var id = response[response.length - 1].id;
 							xhr = new XMLHttpRequest();
 							// с методом DELETE  и url c последней записью
 							xhr.open('DELETE', url + '/'+ id);
