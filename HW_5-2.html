@@ -1,0 +1,173 @@
+<html>
+  <head>
+    <title>5-2</title>
+    <style>
+      #textArea {
+        margin-top: 20px ;
+        margin-left: 20px;
+        min-height: 50px;
+        width: 500px;
+        border-radius: 10px;
+        padding: 3px 10px;
+      }
+      
+      .comment {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        min-height: 50px;
+        width: 700px;
+        padding: 0 10px;
+        margin: 15px 0 2px;
+
+      }
+
+      .btnUnderText {
+
+      }
+     
+      
+      .approved {
+        background-color: aquamarine;
+      }
+
+      .declined {
+        background-color: #dc6582;
+      }
+      
+      
+    </style>
+  </head>
+  <body>
+  
+
+    <textarea id="textArea"></textarea>
+    <button id="send">Send</button>
+    <div id="commentsBlock"></div>
+    
+    <script>
+      'use strict';
+      
+			var textArea = document.getElementById('textArea');
+			var btnSend = document.getElementById('send');
+			var commentsBlock = document.getElementById('commentsBlock');
+			var commentWrap;
+			var id = 0;
+
+
+			btnSend.addEventListener('click', function() {
+	       
+        var text = textArea.value;
+        var xhr = new XMLHttpRequest();
+				var json =  JSON.stringify({
+					id : id,
+					text : text,
+					status: 'waiting'
+				});
+				
+				xhr.open('POST', 'http://localhost:3000/comments');
+				xhr.setRequestHeader('Content-type', 'application/json; charset = utf-8');
+				xhr.send(json);
+
+				xhr.onreadystatechange = function() {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						var  response = JSON.parse(xhr.responseText);
+						var lastid = response.id;
+						
+						addComment(text);
+						addBtnApprove(lastid);
+						addBtnDecline(lastid);
+						addBtnDelete(lastid);
+					}
+				}
+			});
+
+			document.querySelector('#commentsBlock').addEventListener('click', function (evt) {
+				if (evt.target.tagName !== 'BUTTON') {
+					return;
+        }
+        var button = evt.target;
+				if (button.dataset.status === 'approve') {
+					button.parentElement.firstChild.classList.add('approved');
+          removeButtons(button.parentElement);
+          changeStatus(button.dataset.id, 'status', 'approved');
+
+				} else if (button.dataset.status === 'decline') {
+					button.parentElement.firstChild.classList.add('declined');
+          removeButtons(button.parentElement);
+          changeStatus(button.dataset.id, 'status', 'declined');
+					
+				} else if(button.dataset.status === 'deleteThisComment') {
+					console.log(button.dataset.id);
+					button.parentElement.remove();
+          removeComment(button.dataset.id);
+				}
+      });
+      
+      
+      function addComment(text) {
+      	commentWrap = document.createElement('div');
+      	
+				commentsBlock.appendChild(commentWrap);
+				
+				var comment = document.createElement('div');
+				comment.textContent = text;
+				comment.dataset.status = 'waiting';
+				comment.classList.add('comment');
+				commentWrap.appendChild(comment);
+
+				textArea.value = '';
+      }
+
+			function addBtnApprove(id) {
+				var btnAprove = document.createElement('button');
+				btnAprove.textContent = 'Approve';
+				btnAprove.dataset.status = 'approve';
+				btnAprove.dataset.id = id;
+				commentWrap.appendChild(btnAprove);
+      }
+
+			function addBtnDecline(id) {
+				var btnDecl = document.createElement('button');
+				btnDecl.textContent = 'Decline';
+				btnDecl.dataset.status = 'decline';
+				btnDecl.dataset.id = id;
+				commentWrap.appendChild(btnDecl);
+			}
+			
+			function addBtnDelete(id) {
+				var btnDel = document.createElement('button');
+				btnDel.textContent = 'Delete this comment';
+				btnDel.dataset.status = 'deleteThisComment';
+				btnDel.dataset.id = id;
+				commentWrap.appendChild(btnDel);
+			}
+			
+			function removeButtons(parent) {
+        while(parent.querySelector('button')) {
+					parent.querySelector('button').remove();
+        }
+			}
+
+			function changeStatus(id, status, prop) {
+        var xhr = new XMLHttpRequest();
+        var json = JSON.stringify({status: prop});
+				xhr.open('PATCH', 'http://localhost:3000/comments/' + id);
+				xhr.setRequestHeader('Content-type', 'application/json; charset = utf-8');
+				xhr.send(json)
+      }
+      
+      function removeComment(id) {
+				var xhr = new XMLHttpRequest();
+				xhr.open('DELETE', 'http://localhost:3000/comments/' + id);
+				xhr.send();
+
+				xhr.onreadystatechange = function() {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						console.log('удален коммент с ' + id);
+					}
+				}
+			}
+  
+    </script>
+  </body>
+</html>
