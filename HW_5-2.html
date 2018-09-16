@@ -56,6 +56,51 @@
 			var url = 'http://localhost:3000/comments';
 			var id = 0;
 
+			// IIFE запускаем для проверки на сервере комментариев, если есть отображаем их.
+			(function () {
+				// запрос с методом GET
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', url);
+				xhr.send();
+
+				xhr.onreadystatechange = function() {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						var response = JSON.parse(xhr.responseText);
+						
+						// если длина полученного массива заходим в if и прерываем в функцию
+						if (!response.length) {
+							return;
+            }
+						// полученный ответ в виде массива перебираем.
+						for(var i = 0; (response.length - i) > 0; i++) {
+       
+							// устанавливаем в entity - объект с массива индексом i.
+							var entity = response[i];
+							// вызываем функцию для добавления комментария в DOM, передаем текст и статус комментария.
+							addComment(entity.text, entity.status);
+							if (entity.status === 'waiting') {
+								//функция добавляет в DOM кнопку Approve, в параметре - id записи переданный на сервер.
+								addBtnApprove(entity.id);
+								//функция добавляет в DOM кнопку Decline, в параметре - id записи переданный на сервер.
+								addBtnDecline(entity.id);
+								//функция добавляет в DOM кнопку Delete this comment, в параметре - id записи переданный на сервер
+								addBtnDelete(entity.id);
+              }
+              // проверка на статус полученного комментария, если approved.
+							if (entity.status === 'approved') {
+								// то вызываем фунцию для установки класса approved.
+								setClassApprove(document.querySelector('#commentsBlock > div:first-child'));
+              }
+							// проверка на статус полученного комментария, если declined.
+							if (entity.status === 'declined') {
+								// то вызываем фунцию для установки класса declined.
+								setClassDecline(document.querySelector('#commentsBlock > div:first-child'));
+							}
+            }
+          }
+        }
+			}());
+			
       //навешиваем слушаетлям на кнопку Send.
 			btnSend.addEventListener('click', function() {
 				// устанавливаем в переменную text введенноое значение.
@@ -90,7 +135,7 @@
 						var lastid = response.id;
 						
             //функция добавляет в DOM комментарий, в параметре  text введенный пользователем текст.
-						addComment(text);
+						addComment(text, 'waiting');
 						//функция добавляет в DOM кнопку Approve, в параметре - id записи переданный на сервер.
 						addBtnApprove(lastid);
 						//функция добавляет в DOM кнопку Decline, в параметре - id записи переданный на сервер.
@@ -115,7 +160,7 @@
 						// парсим ответ в объект и сохраняем его в response.
 						var response = JSON.parse(xhr.responseText);
 						
-						if (response.length) { // если есть записи на сервере, заходим внутрь 
+						if (response.length) { // если есть записи на сервере, заходим внутрь
 							// получаем id из последнего объекта в массиве.
 							var id = response[response.length - 1].id;
 							xhr = new XMLHttpRequest();
@@ -131,7 +176,9 @@
 							}
             }
           }
-        }
+        };
+        commentsBlock.innerHTML = '';
+        
       });
 
       // находим блок со всеми комментариями и устанавливаем обработчик на все кнопки в нем.
@@ -143,8 +190,8 @@
         var button = evt.target;
 				// если кнопка содержит dataset-status равную approve.
 				if (button.dataset.status === 'approve') {
-					//то, навешивем клас для окраски фона текста зеленым.
-					button.parentElement.firstChild.classList.add('approved');
+					//вызываем фунцию для установки класса approved.
+					setClassApprove(button.parentElement);
 					//вызываем функцию для удаления всех кнопок под данным комментарием.
           removeButtons(button.parentElement);
 					//вызываем функцию для изменения на сервере статуса на - approved.
@@ -152,8 +199,8 @@
 
 					// если кнопка содержит dataset-status равную decline.
 				} else if (button.dataset.status === 'decline') {
-					//то, навешивем клас для окраски фона текста красным.
-					button.parentElement.firstChild.classList.add('declined');
+					//то, вызываем фунцию для установки класса declined.
+					setClassDecline(button.parentElement);
 					//вызываем функцию для удаления всех кнопок под данным комментарием.
           removeButtons(button.parentElement);
 					//вызываем функцию для изменения на сервере статуса на - declined.
@@ -169,17 +216,17 @@
       });
       
       // функция добавляет комментарий в DOM.
-      function addComment(text) {
+      function addComment(text, status) {
       	// создаем обертку для данного комментрия.
       	commentWrap = document.createElement('div');
       	// аппендим его в блок комментариев.
-				commentsBlock.appendChild(commentWrap);
+				commentsBlock.insertBefore(commentWrap,commentsBlock.firstChild);
 				
 				var comment = document.createElement('div');
 				// устанавливаем текст.
 				comment.textContent = text;
 				// устанавливаем dataset-status = 'waiting';
-				comment.dataset.status = 'waiting';
+				comment.dataset.status = status;
 				// устанавливаем класс
 				comment.classList.add('comment');
 				// аппендим в обертку
@@ -267,7 +314,16 @@
 					}
 				}
 			}
-  
+			
+			// функция устанавливат класс approved
+			function setClassApprove(parent) {
+      	parent.firstChild.classList.add('approved');
+      }
+
+			// функция устанавливат класс declined
+			function setClassDecline(parent) {
+				parent.firstChild.classList.add('declined');
+			}
     </script>
   </body>
 </html>
