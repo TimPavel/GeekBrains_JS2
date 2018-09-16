@@ -21,6 +21,10 @@
 
       }
 
+      .noText {
+        border: 1px solid red;
+      }
+      
       .btnUnderText {
 		    margin: 5px;
       }
@@ -102,9 +106,16 @@
 			}());
 			
       //навешиваем слушаетлям на кнопку Send.
-			btnSend.addEventListener('click', function() {
+			btnSend.addEventListener('click', function(event) {
 				// устанавливаем в переменную text введенноое значение.
         var text = textArea.value;
+        // проверка на есть ли введенный текст или нет.
+        if (text === ''){ // если поле пустое то  устанвливаем класс и возвращаем false.
+					textArea.classList.add('noText');
+        	return false;
+        }
+				textArea.classList.remove('noText');
+        
         // создаем новый запрос
         var xhr = new XMLHttpRequest();
         
