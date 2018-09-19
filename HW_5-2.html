@@ -1,0 +1,340 @@
+<html>
+  <head>
+    <title>5-2</title>
+    <style>
+      #textArea {
+        margin-top: 20px ;
+        margin-left: 20px;
+        min-height: 50px;
+        width: 500px;
+        border-radius: 10px;
+        padding: 3px 10px;
+      }
+      
+      .comment {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        min-height: 50px;
+        width: 90%;
+        padding: 0 10px;
+        margin: 15px 0 2px;
+
+      }
+
+      .noText {
+        border: 1px solid red;
+      }
+      
+      .btnUnderText {
+		    margin: 5px;
+      }
+     
+      
+      .approved {
+        background-color: aquamarine;
+      }
+
+      .declined {
+        background-color: #dc6582;
+      }
+      
+      
+    </style>
+  </head>
+  <body>
+  
+    <textarea id="textArea" placeholder="Введите здесь сообщение"></textarea>
+    <button id="send">Send</button>
+    <button id="deleteAll">deleteAll</button>
+    
+    <div id="commentsBlock"></div>
+    
+
+    <script>
+      'use strict';
+      
+			var textArea = document.getElementById('textArea');
+			var btnSend = document.getElementById('send');
+			var commentsBlock = document.getElementById('commentsBlock');
+			var commentWrap;
+			var url = 'http://localhost:3000/comments';
+			var id = 0;
+
+			// IIFE запускаем для проверки на сервере комментариев, если есть отображаем их.
+			(function () {
+				// запрос с методом GET
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', url);
+				xhr.send();
+
+				xhr.onreadystatechange = function() {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						var response = JSON.parse(xhr.responseText);
+						
+						// если длина полученного массива заходим в if и прерываем в функцию
+						if (!response.length) {
+							return;
+            }
+						// полученный ответ в виде массива перебираем.
+						for(var i = 0; (response.length - i) > 0; i++) {
+       
+							// устанавливаем в entity - объект с массива индексом i.
+							var entity = response[i];
+							// вызываем функцию для добавления комментария в DOM, передаем текст и статус комментария.
+							addComment(entity.text, entity.status);
+							if (entity.status === 'waiting') {
+								//функция добавляет в DOM кнопку Approve, в параметре - id записи переданный на сервер.
+								addBtnApprove(entity.id);
+								//функция добавляет в DOM кнопку Decline, в параметре - id записи переданный на сервер.
+								addBtnDecline(entity.id);
+								//функция добавляет в DOM кнопку Delete this comment, в параметре - id записи переданный на сервер
+								addBtnDelete(entity.id);
+              }
+              // проверка на статус полученного комментария, если approved.
+							if (entity.status === 'approved') {
+								// то вызываем фунцию для установки класса approved.
+								setClassApprove(document.querySelector('#commentsBlock > div:first-child'));
+              }
+							// проверка на статус полученного комментария, если declined.
+							if (entity.status === 'declined') {
+								// то вызываем фунцию для установки класса declined.
+								setClassDecline(document.querySelector('#commentsBlock > div:first-child'));
+							}
+            }
+          }
+        }
+			}());
+			
+      //навешиваем слушаетлям на кнопку Send.
+			btnSend.addEventListener('click', function(event) {
+				// устанавливаем в переменную text введенноое значение.
+        var text = textArea.value;
+        // проверка на есть ли введенный текст или нет.
+        if (text === ''){ // если поле пустое то  устанвливаем класс и возвращаем false.
+					textArea.classList.add('noText');
+        	return false;
+        }
+				textArea.classList.remove('noText');
+        
+        // создаем новый запрос
+        var xhr = new XMLHttpRequest();
+        
+        //устанавливаем в переменную json - объект перевденный в строку для передачи в JSON сервер.
+				var json =  JSON.stringify({
+					// передаем id.
+					id : id,
+					// передаем введенный текст.
+					text : text,
+          // передаем в статус свойство 'waiting'.
+					status: 'waiting'
+				});
+				
+				// передаем методом POST так как создаем новую запись на сервере со след id.
+				xhr.open('POST', url);
+				// устанавливаем HTTP заголовок для нашего запроса
+				xhr.setRequestHeader('Content-type', 'application/json; charset = utf-8');
+				// отправляем данные сохраненные в переменную json.
+				xhr.send(json);
+
+				xhr.onreadystatechange = function() {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						// после того, как обработка запроса закончена и ответ готов.
+            // парсим ответ в объект и сохраняем его в response.
+						var  response = JSON.parse(xhr.responseText);
+						// получаем id ответа.
+      
+						var lastid = response.id;
+						
+            //функция добавляет в DOM комментарий, в параметре  text введенный пользователем текст.
+						addComment(text, 'waiting');
+						//функция добавляет в DOM кнопку Approve, в параметре - id записи переданный на сервер.
+						addBtnApprove(lastid);
+						//функция добавляет в DOM кнопку Decline, в параметре - id записи переданный на сервер.
+						addBtnDecline(lastid);
+						//функция добавляет в DOM кнопку Delete this comment, в параметре - id записи переданный на сервер
+						addBtnDelete(lastid);
+					}
+				}
+			});
+
+			//навешиваем слушаетлям на кнопку Delete ALL и устанавливаем функция для удаления всех записей на сервере
+			document.getElementById('deleteAll').addEventListener('click', function deleteAll() {
+				// создаем новый запрос
+				var xhr = new XMLHttpRequest();
+				// запрос с методом GET для получения информации с сервера.
+				xhr.open('GET', url);
+				xhr.send();
+				
+				xhr.onreadystatechange = function () {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						// после того, как обработка запроса закончена и ответ готов.
+						// парсим ответ в объект и сохраняем его в response.
+						var response = JSON.parse(xhr.responseText);
+						
+						if (response.length) { // если есть записи на сервере, заходим внутрь
+							// получаем id из последнего объекта в массиве.
+							var id = response[response.length - 1].id;
+							xhr = new XMLHttpRequest();
+							// с методом DELETE  и url c последней записью
+							xhr.open('DELETE', url + '/'+ id);
+							xhr.send();
+
+							xhr.onreadystatechange = function () {
+								if(xhr.readyState === XMLHttpRequest.DONE){
+									// после того, как обработка закончена, вызываем функцию deleteAll пока будут записи
+									deleteAll();
+								}
+							}
+            }
+          }
+        };
+        commentsBlock.innerHTML = '';
+        
+      });
+
+      // находим блок со всеми комментариями и устанавливаем обработчик на все кнопки в нем.
+			document.querySelector('#commentsBlock').addEventListener('click', function (evt) {
+				if (evt.target.tagName !== 'BUTTON') {
+					return;
+        }
+        // находим кнопку, на которую кликнули.
+        var button = evt.target;
+				// если кнопка содержит dataset-status равную approve.
+				if (button.dataset.status === 'approve') {
+					//вызываем фунцию для установки класса approved.
+					setClassApprove(button.parentElement);
+					//вызываем функцию для удаления всех кнопок под данным комментарием.
+          removeButtons(button.parentElement);
+					//вызываем функцию для изменения на сервере статуса на - approved.
+          changeStatus(button.dataset.id, 'status', 'approved');
+
+					// если кнопка содержит dataset-status равную decline.
+				} else if (button.dataset.status === 'decline') {
+					//то, вызываем фунцию для установки класса declined.
+					setClassDecline(button.parentElement);
+					//вызываем функцию для удаления всех кнопок под данным комментарием.
+          removeButtons(button.parentElement);
+					//вызываем функцию для изменения на сервере статуса на - declined.
+          changeStatus(button.dataset.id, 'status', 'declined');
+
+					// если кнопка содержит dataset-status равную deleteThisComment - то есть удаляем данный комментарий.
+				} else if(button.dataset.status === 'deleteThisComment') {
+					// удаляем текст и кнопки для данного комментария.
+					button.parentElement.remove();
+          // вызываем функцию для удаления на сервере записи с соответствующим id.
+          removeComment(button.dataset.id);
+				}
+      });
+      
+      // функция добавляет комментарий в DOM.
+      function addComment(text, status) {
+      	// создаем обертку для данного комментрия.
+      	commentWrap = document.createElement('div');
+      	// аппендим его в блок комментариев.
+				commentsBlock.insertBefore(commentWrap,commentsBlock.firstChild);
+				
+				var comment = document.createElement('div');
+				// устанавливаем текст.
+				comment.textContent = text;
+				// устанавливаем dataset-status = 'waiting';
+				comment.dataset.status = status;
+				// устанавливаем класс
+				comment.classList.add('comment');
+				// аппендим в обертку
+				commentWrap.appendChild(comment);
+        // стираем поле для ввода.
+				textArea.value = '';
+      }
+
+			// функция добавляет кнопку Approve в DOM.
+			function addBtnApprove(id) {
+				var btnAprove = document.createElement('button');
+				// устанавливаем текст для кнопки.
+				btnAprove.textContent = 'Approve';
+				// устанавливаем в него dataset-status = 'approve'.
+				btnAprove.dataset.status = 'approve';
+				// устанавливаем в dataset-id из параметра функции.
+				btnAprove.dataset.id = id;
+				// устанавливаем класс
+				btnAprove.classList.add('btnUnderText');
+				// аппендим в обертку.
+				commentWrap.appendChild(btnAprove);
+      }
+
+			// функция добавляет кнопку Decline в DOM.
+			function addBtnDecline(id) {
+				var btnDecl = document.createElement('button');
+				// устанавливаем текст для кнопки.
+				btnDecl.textContent = 'Decline';
+				// устанавливаем в него dataset-status = 'decline'.
+				btnDecl.dataset.status = 'decline';
+				// устанавливаем в dataset-id из параметра функции.
+				btnDecl.dataset.id = id;
+				// устанавливаем класс
+				btnDecl.classList.add('btnUnderText');
+				// аппендим в обертку.
+				commentWrap.appendChild(btnDecl);
+			}
+
+			// функция добавляет кнопку Delete в DOM.
+			function addBtnDelete(id) {
+				var btnDel = document.createElement('button');
+				// устанавливаем текст для кнопки.
+				btnDel.textContent = 'Delete this comment';
+				// устанавливаем в него dataset-status = 'deleteThisComment'.
+				btnDel.dataset.status = 'deleteThisComment';
+				// устанавливаем в dataset-id из параметра функции.
+				btnDel.dataset.id = id;
+				// устанавливаем класс
+				btnDel.classList.add('btnUnderText');
+				// аппендим в обертку.
+				commentWrap.appendChild(btnDel);
+			}
+
+			// функция удаляет три кнопки под комментарием.
+			function removeButtons(parent) {
+      	// запускаем цикл, пока есть в обертке кнопки
+        while(parent.querySelector('button')) {
+        	// удаляем кнопку
+					parent.querySelector('button').remove();
+        }
+			}
+
+			// функция меняет статус на сервере параметры id записи, его ключ, и свойство для записи.
+			function changeStatus(id, status, prop) {
+				// создаем новый запрос.
+        var xhr = new XMLHttpRequest();
+        var json = JSON.stringify({status: prop});
+        // передаем запрос методом PATCH, так как нам нужно поменять данные в записи на сервере.
+				xhr.open('PATCH', 'http://localhost:3000/comments/' + id);
+				xhr.setRequestHeader('Content-type', 'application/json; charset = utf-8');
+				xhr.send(json)
+      }
+
+			// функция удаляет на сервере запись с соответствующим id.
+      function removeComment(id) {
+				// создаем новый запрос.
+				var xhr = new XMLHttpRequest();
+				// метод запроса DELETE  и в конце url дописываем id нужной записи.
+				xhr.open('DELETE', 'http://localhost:3000/comments/' + id);
+				xhr.send();
+
+				xhr.onreadystatechange = function() {
+					if(xhr.readyState === XMLHttpRequest.DONE) {
+						console.log('удален коммент с ' + id);
+					}
+				}
+			}
+			
+			// функция устанавливат класс approved
+			function setClassApprove(parent) {
+      	parent.firstChild.classList.add('approved');
+      }
+
+			// функция устанавливат класс declined
+			function setClassDecline(parent) {
+				parent.firstChild.classList.add('declined');
+			}
+    </script>
+  </body>
+</html>
