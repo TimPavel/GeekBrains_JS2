@@ -67,7 +67,6 @@
       .btnUnderText {
 		    margin: 5px;
       }
-     
       
       .approved {
         background-color: aquamarine;
@@ -77,10 +76,8 @@
         background-color: #fa8e8e;
       }
       
-      
     </style>
-  
- 
+   
   </head>
   <body>
 
@@ -118,11 +115,11 @@
     <!--<textarea id="textArea" class="form-control" placeholder="Введите здесь сообщение"></textarea>-->
     <button id="send" class="btn btn-primary btnMarginBottom">Send</button>
     <button id="deleteAll" class="btn btn-primary btnMarginBottom">Delete all</button>
-    <button id="opener" class="btn btn-primary btnMarginBottom">Dialog</button>
+  
+    <button id="opener" class="btn btn-primary btnMarginBottom">Dialog test</button>
     
     <div id="commentsBlock"></div>
-
-
+  
     <!--скрипт формы обратной связи-->
     <script >
 
@@ -135,7 +132,7 @@
 		//создаем блок для сообщения об ошибке при вводе имени
 		var errorMessageName = document.createElement('div');
 		//устанавливаем сам текст для сообщения при введенного несоответствии значения и установленного регулярного выражения для имени
-		var textErrorForName = 'Not correct name, fill the field above by only characters.';
+		var textErrorForName = 'Not correct name, fill the field by only characters.';
 
 		//находим инпут для телефонного номера
 		var phoneField = document.getElementById('phoneField');
@@ -153,7 +150,7 @@
 		//создаем блок для сообщения об ошибке при вводе емейла
 		var errorMessageEmail = document.createElement('div');
 		//устанавливаем сам текст для сообщения при несоответствии значения и установленного регулярного выражения для емейла
-		var textErrorForEmail = 'Not correct email, please use this formats\nmymail@mail.ru,or my.mail@mail.ru, or my-mail@mail.ru';
+		var textErrorForEmail = 'Not correct email, please use this formats\nmymail@mail.ru, or my.mail@mail.ru, or my-mail@mail.ru';
 
 		//находим инпут для текста
 		var datepicker = document.getElementById('datepicker');
@@ -171,7 +168,6 @@
 		buttonSend.addEventListener('click', function(event){
 			//цикл для проверки значений хоть в каком нибуде инпуте при нажатии кнопки отправить
 			for (var i = 0; i < inputs.length; i++) {
-        // console.log(inputs[i].id);
 				// проверяем инпуты на наличие в них значений
 
 				if ( !(inputs[i].id === 'nameField' && nameFieldRegExp.test(inputs[i].value)) &&
@@ -198,21 +194,20 @@
 						// вызываем функция для устаноки ошибки при вводе имени
 						setErrorNotCorrectInput(inputs[i], 'userStyleInput', errorMessageName, textErrorForName, 'messageForError');
 					}
-     
-					
+				
 				//отменяем действие кнопки по умолчанию
 					event.preventDefault();
 				} else { //иначе, снимаем обрамление
 					inputs[i].classList.remove('userStyleInput');
-				}
+        }
 			}
+
 		});
   
-		
-		//навешиваем обработчик blur на инпут для текста
+		//навешиваем обработчик blur на инпут для текста.
 		datepicker.addEventListener('blur', function(){
-			if(!(dateRegExp.test(datepicker.value))) {// если есть несоответствие значения и рег.выраж
-				// вызываем функция для устаноки ошибки при вводе даты рождения
+			if(!(dateRegExp.test(datepicker.value))) {// если есть несоответствие значения и рег.выраж.
+				// вызываем функция для устаноки ошибки при вводе даты рождения.
 				setErrorNotCorrectInput(datepicker, 'userStyleInput', errorMessageText, textErrorForTextField, 'messageForError');
 				
 			} else { //иначе,
@@ -225,15 +220,15 @@
 			}
 		});
 
-		//навешиваем обработчик blur на инпут для email а
+		//навешиваем обработчик blur на инпут для email а.
 		emailField.addEventListener('blur', function(){
-			if(!emailRegExp.test(emailField.value)) {// если есть несоответствие значения и рег.выраж
+			if(!emailRegExp.test(emailField.value)) {// если есть несоответствие значения и рег.выраж.
 				// вызываем функция для устаноки ошибки при вводе емейла
 				setErrorNotCorrectInput(emailField, 'userStyleInput', errorMessageEmail, textErrorForEmail, 'messageForError');
 		
 			} else {  //иначе,
-				if (document.body.contains(errorMessageEmail)) { //если есть сообщени об ошибке для данного инпута
-					//удаляем данное сообщение
+				if (document.body.contains(errorMessageEmail)) { //если есть сообщени об ошибке для данного инпута.
+					//удаляем данное сообщение.
 					emailField.parentElement.removeChild(errorMessageEmail);
 				}
 				// также удаляем обрамление
@@ -244,7 +239,7 @@
 		//навешиваем обработчик blur на инпут для телефонного номера
 		phoneField.addEventListener('blur', function(){
 			if(!phoneRegExp.test(phoneField.value)) {  // если есть несоответствие значения и рег.выраж
-    
+				// вызываем функция для устаноки ошибки при вводе телефонного номера.
 				setErrorNotCorrectInput(phoneField, 'userStyleInput', errorMessagePhone, textErrorForPhone, 'messageForError');
 				
 			} else { //иначе,
@@ -260,7 +255,7 @@
 		//навешиваем обработчик blur на инпут для имени
 		nameField.addEventListener('blur', function(){
 			if(!nameFieldRegExp.test(nameField.value)) {  // если есть несоответствие значения и рег.выраж
-				
+				// вызываем функция для устаноки ошибки при вводе имени.
 				setErrorNotCorrectInput(nameField, 'userStyleInput', errorMessageName, textErrorForName, 'messageForError');
 			} else { //иначе,
 				if (document.body.contains(errorMessageName)) { //если есть сообщени об ошибке для данного инпута
@@ -288,9 +283,11 @@
 			errorEl.textContent = errorText;
 			// аппендим сообщение об ошибке при вводе текста
 			element.parentElement.appendChild(errorEl);
+			
+			$(element).effect("bounce", "slow", 1000);
+			$('#message').text(errorText).dialog('open');
 		}
 		
-
   </script>
   
     <!--скрипт комментариев-->
@@ -433,7 +430,6 @@
 				}
 			};
 			commentsBlock.innerHTML = '';
-
 		});
 
 		// находим блок со всеми комментариями и устанавливаем обработчик на все кнопки в нем.
@@ -584,29 +580,32 @@
   <!--jqueryUI-->
     <script>
 			$( "#message" ).dialog({
-        autoOpen: false,
-        modal: true,
-				title: "Ошибочка(",
+				autoOpen: false,
+				modal: true,
+				title: "Input error",
 				draggable: true,
-        show: {
-        	effect: "fade",
-          duration: 1000
-        },
-        hide: {
-        	effect: "blind",
-          duration: 500
-        },
-        buttons: {
-        	'закрыть меня' : function () {
-            $(this).dialog("close");
+				show: {
+					effect: "fade",
+					duration: 1000
+				},
+				hide: {
+					effect: "blind",
+					duration: 500
+				},
+				buttons: {
+					"закрыть меня" : function () {
+						$(this).dialog("close");
 					}
-        }
+				}
 			});
+
+	
    
+			// для теста
 			$('#opener').click (function() {
-				$('#message').dialog('open');
+				$('#messageOk').dialog('open');
       });
-			
+					
       //календарь
 			$( function() {
 				$( "#datepicker" ).datepicker({
@@ -622,21 +621,6 @@
 				});
 			} );
 
-			// при некорректном вводе применяем эффект bounce
-			$('#buttonSend').click(function() {
-				$(".form-control").each(function() {
-     
-					if ( !(this.id === 'nameField' && nameFieldRegExp.test(this.value)) &&
-            !(this.id === 'phoneField' && phoneRegExp.test(this.value)) &&
-					  !(this.id === 'emailField' && emailRegExp.test(this.value)) &&
-					!(this.id === 'datepicker' && dateRegExp.test(this.value))) {
-				
-						$(this).effect("bounce", "slow", 1000);
-						$('#message').text("Error. This function under construction.").dialog('open');
-						
-					}
-				})
-			})
     
     </script>
 
