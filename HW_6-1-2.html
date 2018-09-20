@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>6-1</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+    <style>
+      .form-wrap {
+        margin: auto;
+        padding: 20px;
+        max-width: 850px
+      }
+
+      .messageForError {
+        visibility: visible;
+        color: red;
+        font-size: 0.8rem;
+        padding-left: 10px;
+      }
+      .correctValue {
+        visibility: hidden;
+      }
+
+      .userStyleInput {
+        border: solid red 2px;
+      }
+      
+      #textArea {
+        margin-top: 20px ;
+        margin-left: 20px;
+        min-height: 50px;
+        width: 500px;
+        border-radius: 10px;
+        padding: 3px 10px;
+      }
+      
+      .inline {
+        display: inline;
+      }
+      
+      .btnMarginBottom {
+        margin-bottom: 30px;
+      }
+
+      .removeRightMargin {
+        !important;
+        margin-right: 0;
+      }
+      
+      .comment {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        min-height: 50px;
+        width: 90%;
+        padding: 0 10px;
+        margin: 15px 0 2px;
+
+      }
+
+      .noText {
+        border: 1px solid red;
+      }
+      
+      .btnUnderText {
+		    margin: 5px;
+      }
+      
+      .approved {
+        background-color: aquamarine;
+      }
+
+      .declined {
+        background-color: #fa8e8e;
+      }
+      
+    </style>
+   
+  </head>
+  <body>
+
+  <p id="message"></p>
+  
+  <div class="form-wrap">
+    <form class="my-form" action="">
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <input id="nameField" type="text" name="name" class="form-control" placeholder="Имя">
+        </div>
+        <div class="form-group col-md-6">
+          <input id="phoneField" type="text" name="phone" class="form-control" placeholder="Телефон">
+        </div>
+      </div>
+    
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <input id="emailField" type="text" name="email" class="form-control" placeholder="Email">
+        </div>
+        <div class="form-group col-md-6">
+         <input  id="datepicker" type="text" class="textField form-control" size="20" placeholder = "Date of Birth">
+        </div>
+      </div>
+      <button id="buttonSend" type="submit" class="btn btn-primary">Отправить</button>
+    </form>
+  </div>
+  
+  <form class="inline">
+    <div class="form-group inline">
+      <textarea id="textArea" class="removeRightMargin inline" placeholder="Введите здесь сообщение"></textarea>
+    </div>
+  </form>
+  
+    <!--<textarea id="textArea" class="form-control" placeholder="Введите здесь сообщение"></textarea>-->
+    <button id="send" class="btn btn-primary btnMarginBottom">Send</button>
+    <button id="deleteAll" class="btn btn-primary btnMarginBottom">Delete all</button>
+  
+    <button id="opener" class="btn btn-primary btnMarginBottom">Dialog test</button>
+    
+    <div id="commentsBlock"></div>
+  
+    <!--скрипт формы обратной связи-->
+    <script >
+
+		//находим все инпуты и кладем их в инпутс
+		var inputs = document.querySelectorAll('input');
+		//находим инпут для имени
+		var nameField = document.getElementById('nameField');
+		//устанавливаем регулярное выражение для имени и для поля с текстом
+		var nameFieldRegExp = /^[A-Za-zЁёА-Яа-я]+$/;
+		//создаем блок для сообщения об ошибке при вводе имени
+		var errorMessageName = document.createElement('div');
+		//устанавливаем сам текст для сообщения при введенного несоответствии значения и установленного регулярного выражения для имени
+		var textErrorForName = 'Not correct name, fill the field by only characters.';
+
+		//находим инпут для телефонного номера
+		var phoneField = document.getElementById('phoneField');
+		//устанавливаем регулярное выражение для телефонного номера
+		var phoneRegExp = /\+7\(\d{3}\)\d{3}-\d{4}/;
+		//создаем блок для сообщения об ошибке при вводе телефонного номера
+		var errorMessagePhone = document.createElement('div');
+		//устанавливаем сам текст для сообщения при несоответствии значения и установленного регулярного выражения для номера
+		var textErrorForPhone = 'Not correct phone number, please use this format +7(000)000-0000';
+
+		//находим инпут для емейла
+		var emailField = document.getElementById('emailField');
+		//устанавливаем регулярное выражение ля емейла
+		var emailRegExp = /((\w+|\w+\.\w+|\w+-\w+)@[a-zA-Z_]+?\.[a-zA-Z]{2,3})$/;
+		//создаем блок для сообщения об ошибке при вводе емейла
+		var errorMessageEmail = document.createElement('div');
+		//устанавливаем сам текст для сообщения при несоответствии значения и установленного регулярного выражения для емейла
+		var textErrorForEmail = 'Not correct email, please use this formats\nmymail@mail.ru, or my.mail@mail.ru, or my-mail@mail.ru';
+
+		//находим инпут для текста
+		var datepicker = document.getElementById('datepicker');
+		//создаем блок для сообщения об ошибке при вводе текста
+		var dateRegExp = /[\d]{2}-[\d]{2}-[\d]{4}/;
+		var errorMessageText = document.createElement('div');
+		//устанавливаем сам текст сообщения при несоответствии введенного значения и установленного регулярного выражения для текста
+		var textErrorForTextField  = 'Not correct date, please use this format dd-mm-yyyy';
+
+		////находим кнопку отправить
+		var buttonSend = document.getElementById('buttonSend');
+
+
+		//навешиваем обработчик на кнопку
+		buttonSend.addEventListener('click', function(event){
+			//цикл для проверки значений хоть в каком нибуде инпуте при нажатии кнопки отправить
+			for (var i = 0; i < inputs.length; i++) {
+				// проверяем инпуты на наличие в них значений
+
+				if ( !(inputs[i].id === 'nameField' && nameFieldRegExp.test(inputs[i].value)) &&
+					!(inputs[i].id === 'phoneField' && phoneRegExp.test(inputs[i].value)) &&
+					!(inputs[i].id === 'emailField' && emailRegExp.test(inputs[i].value)) &&
+					!(inputs[i].id === 'datepicker' && dateRegExp.test(inputs[i].value))) {
+     
+					if(inputs[i].id === 'datepicker') {
+						// вызываем функция для устаноки ошибки при вводе даты рождения
+						setErrorNotCorrectInput(inputs[i], 'userStyleInput', errorMessageText, textErrorForTextField, 'messageForError');
+					}
+					
+					if(inputs[i].id === 'emailField') {
+						// вызываем функция для устаноки ошибки при вводе емейла
+						setErrorNotCorrectInput(inputs[i], 'userStyleInput', errorMessageEmail, textErrorForEmail, 'messageForError');
+					}
+     
+					if(inputs[i].id === 'phoneField') {
+						// вызываем функция для устаноки ошибки при вводе номера телефона
+						setErrorNotCorrectInput(inputs[i], 'userStyleInput', errorMessagePhone, textErrorForPhone, 'messageForError');
+					}
+     
+					if(inputs[i].id === 'nameField') {
+						// вызываем функция для устаноки ошибки при вводе имени
+						setErrorNotCorrectInput(inputs[i], 'userStyleInput', errorMessageName, textErrorForName, 'messageForError');
+					}
+				
+				//отменяем действие кнопки по умолчанию
+					event.preventDefault();
+				} else { //иначе, снимаем обрамление
+					inputs[i].classList.remove('userStyleInput');
+        }
+			}
+
+		});
+  
+		//навешиваем обработчик blur на инпут для текста.
+		datepicker.addEventListener('blur', function(){
+			if(!(dateRegExp.test(datepicker.value))) {// если есть несоответствие значения и рег.выраж.
+				// вызываем функция для устаноки ошибки при вводе даты рождения.
+				setErrorNotCorrectInput(datepicker, 'userStyleInput', errorMessageText, textErrorForTextField, 'messageForError');
+				
+			} else { //иначе,
+				if (document.body.contains(errorMessageText)) { //если есть сообщени об ошибке для данного инпута
+					//удаляем данное сообщение
+					datepicker.parentElement.removeChild(errorMessageText);
+				}
+				// также удаляем обрамление
+				datepicker.classList.remove('userStyleInput');
+			}
+		});
+
+		//навешиваем обработчик blur на инпут для email а.
+		emailField.addEventListener('blur', function(){
+			if(!emailRegExp.test(emailField.value)) {// если есть несоответствие значения и рег.выраж.
+				// вызываем функция для устаноки ошибки при вводе емейла
+				setErrorNotCorrectInput(emailField, 'userStyleInput', errorMessageEmail, textErrorForEmail, 'messageForError');
+		
+			} else {  //иначе,
+				if (document.body.contains(errorMessageEmail)) { //если есть сообщени об ошибке для данного инпута.
+					//удаляем данное сообщение.
+					emailField.parentElement.removeChild(errorMessageEmail);
+				}
+				// также удаляем обрамление
+				emailField.classList.remove('userStyleInput');
+			}
+		});
+
+		//навешиваем обработчик blur на инпут для телефонного номера
+		phoneField.addEventListener('blur', function(){
+			if(!phoneRegExp.test(phoneField.value)) {  // если есть несоответствие значения и рег.выраж
+				// вызываем функция для устаноки ошибки при вводе телефонного номера.
+				setErrorNotCorrectInput(phoneField, 'userStyleInput', errorMessagePhone, textErrorForPhone, 'messageForError');
+				
+			} else { //иначе,
+				if (document.body.contains(errorMessagePhone)) { //если есть сообщени об ошибке для данного инпута
+					//удаляем данное сообщение
+					phoneField.parentElement.removeChild(errorMessagePhone);
+				}
+				// также удаляем обрамление
+				phoneField.classList.remove('userStyleInput');
+			}
+		});
+
+		//навешиваем обработчик blur на инпут для имени
+		nameField.addEventListener('blur', function(){
+			if(!nameFieldRegExp.test(nameField.value)) {  // если есть несоответствие значения и рег.выраж
+				// вызываем функция для устаноки ошибки при вводе имени.
+				setErrorNotCorrectInput(nameField, 'userStyleInput', errorMessageName, textErrorForName, 'messageForError');
+			} else { //иначе,
+				if (document.body.contains(errorMessageName)) { //если есть сообщени об ошибке для данного инпута
+					//удаляем данное сообщение
+					nameField.parentElement.removeChild(errorMessageName);
+				}
+				// также удаляем обрамление
+				nameField.classList.remove('userStyleInput');
+			}
+		});
+
+		/**
+     * Функция для установки сообщения об ощибке ввода и обрамление рамкой.
+		 * @param element - сам инпут
+		 * @param classForElement - класса для инпута
+		 * @param errorEl - элемент сообщения об ошибке
+		 * @param errorText - текст для элемент сообщения об ошибке
+		 * @param errorTextClass - класс для  элемента сообщения об ошибке
+		 */
+		function setErrorNotCorrectInput(element, classForElement, errorEl, errorText, errorTextClass) {
+			element.classList.add(classForElement);
+			//добавляем класс для сообщения об ошибке
+			errorEl.classList.add(errorTextClass);
+			// устанавливаем заготовленный текст для данного случая
+			errorEl.textContent = errorText;
+			// аппендим сообщение об ошибке при вводе текста
+			element.parentElement.appendChild(errorEl);
+			
+			$(element).effect("bounce", "slow", 1000);
+			$('#message').text(errorText).dialog('open');
+		}
+		
+  </script>
+  
+    <!--скрипт комментариев-->
+    <script>
+		'use strict';
+		var textArea = document.getElementById('textArea');
+		var btnSend = document.getElementById('send');
+		var commentsBlock = document.getElementById('commentsBlock');
+		var commentWrap;
+		var url = 'http://localhost:3000/comments';
+		var id = 0;
+
+		// IIFE запускаем для проверки на сервере комментариев, если есть отображаем их.
+		(function () {
+			// запрос с методом GET
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', url);
+			xhr.send();
+
+			xhr.onreadystatechange = function() {
+				if(xhr.readyState === XMLHttpRequest.DONE) {
+					var response = JSON.parse(xhr.responseText);
+
+					// если длина полученного массива заходим в if и прерываем в функцию
+					if (!response.length) {
+						return;
+					}
+					// полученный ответ в виде массива перебираем.
+					for(var i = 0; (response.length - i) > 0; i++) {
+
+						// устанавливаем в entity - объект с массива индексом i.
+						var entity = response[i];
+						// вызываем функцию для добавления комментария в DOM, передаем текст и статус комментария.
+						addComment(entity.text, entity.status);
+						if (entity.status === 'waiting') {
+							//функция добавляет в DOM кнопку Approve, в параметре - id записи переданный на сервер.
+							addBtnApprove(entity.id);
+							//функция добавляет в DOM кнопку Decline, в параметре - id записи переданный на сервер.
+							addBtnDecline(entity.id);
+							//функция добавляет в DOM кнопку Delete this comment, в параметре - id записи переданный на сервер
+							addBtnDelete(entity.id);
+						}
+						// проверка на статус полученного комментария, если approved.
+						if (entity.status === 'approved') {
+							// то вызываем фунцию для установки класса approved.
+							setClassApprove(document.querySelector('#commentsBlock > div:first-child'));
+						}
+						// проверка на статус полученного комментария, если declined.
+						if (entity.status === 'declined') {
+							// то вызываем фунцию для установки класса declined.
+							setClassDecline(document.querySelector('#commentsBlock > div:first-child'));
+						}
+					}
+				}
+			}
+		}());
+
+		//навешиваем слушателя на кнопку Send.
+		btnSend.addEventListener('click', function(event) {
+			// устанавливаем в переменную text введенноое значение.
+			var text = textArea.value;
+
+			// проверка на есть ли введенный текст или нет.
+			if (text === ''){ // если поле пустое то  устанвливаем класс и возвращаем false.
+				textArea.classList.add('userStyleInput');
+				return false;
+			}
+			textArea.classList.remove('userStyleInput');
+
+			// создаем новый запрос
+			var xhr = new XMLHttpRequest();
+
+			//устанавливаем в переменную json - объект перевденный в строку для передачи в JSON сервер.
+			var json =  JSON.stringify({
+				// передаем id.
+				id : id,
+				// передаем введенный текст.
+				text : text,
+				// передаем в статус свойство 'waiting'.
+				status: 'waiting'
+			});
+
+			// передаем методом POST так как создаем новую запись на сервере со след id.
+			xhr.open('POST', url);
+			// устанавливаем HTTP заголовок для нашего запроса
+			xhr.setRequestHeader('Content-type', 'application/json; charset = utf-8');
+			// отправляем данные сохраненные в переменную json.
+			xhr.send(json);
+
+			xhr.onreadystatechange = function() {
+				if(xhr.readyState === XMLHttpRequest.DONE) {
+					// после того, как обработка запроса закончена и ответ готов.
+					// парсим ответ в объект и сохраняем его в response.
+					var  response = JSON.parse(xhr.responseText);
+					// получаем id ответа.
+
+					var lastid = response.id;
+
+					//функция добавляет в DOM комментарий, в параметре  text введенный пользователем текст.
+					addComment(text, 'waiting');
+					//функция добавляет в DOM кнопку Approve, в параметре - id записи переданный на сервер.
+					addBtnApprove(lastid);
+					//функция добавляет в DOM кнопку Decline, в параметре - id записи переданный на сервер.
+					addBtnDecline(lastid);
+					//функция добавляет в DOM кнопку Delete this comment, в параметре - id записи переданный на сервер
+					addBtnDelete(lastid);
+				}
+			}
+		});
+
+		//навешиваем слушаетлям на кнопку Delete ALL и устанавливаем функция для удаления всех записей на сервере
+		document.getElementById('deleteAll').addEventListener('click', function deleteAll() {
+			// создаем новый запрос
+			var xhr = new XMLHttpRequest();
+			// запрос с методом GET для получения информации с сервера.
+			xhr.open('GET', url);
+			xhr.send();
+
+			xhr.onreadystatechange = function () {
+				if(xhr.readyState === XMLHttpRequest.DONE) {
+					// после того, как обработка запроса закончена и ответ готов.
+					// парсим ответ в объект и сохраняем его в response.
+					var response = JSON.parse(xhr.responseText);
+
+					if (response.length) { // если есть записи на сервере, заходим внутрь
+						// получаем id из последнего объекта в массиве.
+						var id = response[response.length - 1].id;
+						xhr = new XMLHttpRequest();
+						// с методом DELETE  и url c последней записью
+						xhr.open('DELETE', url + '/'+ id);
+						xhr.send();
+
+						xhr.onreadystatechange = function () {
+							if(xhr.readyState === XMLHttpRequest.DONE){
+								// после того, как обработка закончена, вызываем функцию deleteAll пока будут записи
+								deleteAll();
+							}
+						}
+					}
+				}
+			};
+			commentsBlock.innerHTML = '';
+		});
+
+		// находим блок со всеми комментариями и устанавливаем обработчик на все кнопки в нем.
+		document.querySelector('#commentsBlock').addEventListener('click', function (evt) {
+			if (evt.target.tagName !== 'BUTTON') {
+				return;
+			}
+			// находим кнопку, на которую кликнули.
+			var button = evt.target;
+			// если кнопка содержит dataset-status равную approve.
+			if (button.dataset.status === 'approve') {
+				//вызываем фунцию для установки класса approved.
+				setClassApprove(button.parentElement);
+				//вызываем функцию для удаления всех кнопок под данным комментарием.
+				removeButtons(button.parentElement);
+				//вызываем функцию для изменения на сервере статуса на - approved.
+				changeStatus(button.dataset.id, 'status', 'approved');
+
+				// если кнопка содержит dataset-status равную decline.
+			} else if (button.dataset.status === 'decline') {
+				//то, вызываем фунцию для установки класса declined.
+				setClassDecline(button.parentElement);
+				//вызываем функцию для удаления всех кнопок под данным комментарием.
+				removeButtons(button.parentElement);
+				//вызываем функцию для изменения на сервере статуса на - declined.
+				changeStatus(button.dataset.id, 'status', 'declined');
+
+				// если кнопка содержит dataset-status равную deleteThisComment - то есть удаляем данный комментарий.
+			} else if(button.dataset.status === 'deleteThisComment') {
+				// удаляем текст и кнопки для данного комментария.
+				button.parentElement.remove();
+				// вызываем функцию для удаления на сервере записи с соответствующим id.
+				removeComment(button.dataset.id);
+			}
+		});
+
+		// функция добавляет комментарий в DOM.
+		function addComment(text, status) {
+			// создаем обертку для данного комментрия.
+			commentWrap = document.createElement('div');
+			// аппендим его в блок комментариев.
+			commentsBlock.insertBefore(commentWrap,commentsBlock.firstChild);
+
+			var comment = document.createElement('div');
+			// устанавливаем текст.
+			comment.textContent = text;
+			// устанавливаем dataset-status = 'waiting';
+			comment.dataset.status = status;
+			// устанавливаем класс
+			comment.classList.add('comment');
+			// аппендим в обертку
+			commentWrap.appendChild(comment);
+			// стираем поле для ввода.
+			textArea.value = '';
+		}
+
+		// функция добавляет кнопку Approve в DOM.
+		function addBtnApprove(id) {
+			var btnAprove = document.createElement('button');
+			// устанавливаем текст для кнопки.
+			btnAprove.textContent = 'Approve';
+			// устанавливаем в него dataset-status = 'approve'.
+			btnAprove.dataset.status = 'approve';
+			// устанавливаем в dataset-id из параметра функции.
+			btnAprove.dataset.id = id;
+			// устанавливаем класс
+			btnAprove.classList.add('btnUnderText');
+			// аппендим в обертку.
+			commentWrap.appendChild(btnAprove);
+		}
+
+		// функция добавляет кнопку Decline в DOM.
+		function addBtnDecline(id) {
+			var btnDecl = document.createElement('button');
+			// устанавливаем текст для кнопки.
+			btnDecl.textContent = 'Decline';
+			// устанавливаем в него dataset-status = 'decline'.
+			btnDecl.dataset.status = 'decline';
+			// устанавливаем в dataset-id из параметра функции.
+			btnDecl.dataset.id = id;
+			// устанавливаем класс
+			btnDecl.classList.add('btnUnderText');
+			// аппендим в обертку.
+			commentWrap.appendChild(btnDecl);
+		}
+
+		// функция добавляет кнопку Delete в DOM.
+		function addBtnDelete(id) {
+			var btnDel = document.createElement('button');
+			// устанавливаем текст для кнопки.
+			btnDel.textContent = 'Delete this comment';
+			// устанавливаем в него dataset-status = 'deleteThisComment'.
+			btnDel.dataset.status = 'deleteThisComment';
+			// устанавливаем в dataset-id из параметра функции.
+			btnDel.dataset.id = id;
+			// устанавливаем класс
+			btnDel.classList.add('btnUnderText');
+			// аппендим в обертку.
+			commentWrap.appendChild(btnDel);
+		}
+
+		// функция удаляет три кнопки под комментарием.
+		function removeButtons(parent) {
+			// запускаем цикл, пока есть в обертке кнопки
+			while(parent.querySelector('button')) {
+				// удаляем кнопку
+				parent.querySelector('button').remove();
+			}
+		}
+
+		// функция меняет статус на сервере параметры id записи, его ключ, и свойство для записи.
+		function changeStatus(id, status, prop) {
+			// создаем новый запрос.
+			var xhr = new XMLHttpRequest();
+			var json = JSON.stringify({status: prop});
+			// передаем запрос методом PATCH, так как нам нужно поменять данные в записи на сервере.
+			xhr.open('PATCH', 'http://localhost:3000/comments/' + id);
+			xhr.setRequestHeader('Content-type', 'application/json; charset = utf-8');
+			xhr.send(json)
+		}
+
+		// функция удаляет на сервере запись с соответствующим id.
+		function removeComment(id) {
+			// создаем новый запрос.
+			var xhr = new XMLHttpRequest();
+			// метод запроса DELETE  и в конце url дописываем id нужной записи.
+			xhr.open('DELETE', 'http://localhost:3000/comments/' + id);
+			xhr.send();
+
+			xhr.onreadystatechange = function() {
+				if(xhr.readyState === XMLHttpRequest.DONE) {
+					console.log('удален коммент с ' + id);
+				}
+			}
+		}
+
+		// функция устанавливат класс approved
+		function setClassApprove(parent) {
+			parent.firstChild.classList.add('approved');
+		}
+
+		// функция устанавливат класс declined
+		function setClassDecline(parent) {
+			parent.firstChild.classList.add('declined');
+		}
+  </script>
+  
+  <!--jqueryUI-->
+    <script>
+			$( "#message" ).dialog({
+				autoOpen: false,
+				modal: true,
+				title: "Input error",
+				draggable: true,
+				show: {
+					effect: "fade",
+					duration: 1000
+				},
+				hide: {
+					effect: "blind",
+					duration: 500
+				},
+				buttons: {
+					"закрыть меня" : function () {
+						$(this).dialog("close");
+					}
+				}
+			});
+
+	
+   
+			// для теста
+			$('#opener').click (function() {
+				$('#messageOk').dialog('open');
+      });
+					
+      //календарь
+			$( function() {
+				$( "#datepicker" ).datepicker({
+					dateFormat: "dd-mm-yy",
+					changeMonth: true,
+					monthNamesShort: ['Янв', 'Фев', 'Март', 'Апр', 'Май', 'Июнь', 'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+					changeYear: true,
+          dayNamesMin: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+          firstDay: 1
+        });
+				$( "#anim" ).on( "change", function() {
+					$( "#datepicker" ).datepicker( "bounce", "showAnim", $( this ).val() );
+				});
+			} );
+
+    
+    </script>
+
+  
+    
+  </body>
+</html>
